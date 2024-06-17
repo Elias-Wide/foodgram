@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,6 +10,8 @@ SECRET_KEY = 'django-insecure-1^f)yg_2xxsky@e!504=0avd+54#dmvz3r6)-@(n_u1^8#%&ls
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+AUTH_USER_MODEL = 'users.User'
 
 
 INSTALLED_APPS = [
@@ -19,10 +23,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_simplejwt',
+    'djoser',
     'api',
     'recipes',
     'users',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -79,8 +84,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
 
-LANGUAGE_CODE = 'en-us'
+DJOSER = {
+    "SERIALIZERS": {
+        "user_create": 'api.serializers.SignUpSerializer',
+        "user": 'api.serializers.UserProfileSerializer',
+        'token_create': 'djoser.serializers.TokenCreateSerializer',
+        'current_user': 'backend.accounts.serializers.UserProfileSerializer',
+    }
+}
+
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -92,6 +116,9 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
