@@ -99,13 +99,31 @@ class UserViewSet(viewsets.ModelViewSet):
             instance=self.request.user,
             validated_data=serializer.validated_data
         )
-        # self.request.user.set_password(serializer.data["new_password"])
-        # self.request.user.save()
         return Response(
             'Пароль успешно изменен',
             status=status.HTTP_204_NO_CONTENT
         )
 
+    @action(
+        ['PUT', 'DELETE'],
+        detail=False,
+        url_path='me/avatar',
+        permission_classes=[IsAuthenticated,]
+    )
+    def avatar(self, request):
+        user=request.user
+        if request.method == 'PUT':
+            serializer = serializers.AvatarSerializer(
+                user,
+                data=request.data,
+            )
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.data)
+        # if request.method == 'DELETE':
+        #     user.avatar = None
+        #     user.save()
+        #     return Response('Аватар успешно удален')
+        
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
