@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api import serializers
-from recipes.models import  Ingredient, Recipe, Subscription, Tag
+from recipes.models import  Ingredient, Recipe, ShopingList, Subscription, Tag
 from users.models import User
 
 
@@ -29,7 +29,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         ['GET'],
         detail=False,
-        name='Получить данные авторизованного пользователя',
+        name='current_user',
         permission_classes=[IsAuthenticated,]
     )
     def me(self, request):
@@ -42,7 +42,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        name='Создание/удаление подписки',
+        name='subscribe',
         permission_classes=[IsAuthenticated,]
     )
     def subscribe(self, request, pk):
@@ -113,23 +113,35 @@ class UserViewSet(viewsets.ModelViewSet):
     def avatar(self, request):
         user = request.user
         if request.method == 'PUT':
-            serializer = serializers.UserProfileSerializer(user, data=request.data, partial=True, context={"request": request})
+            serializer = serializers.UserProfileSerializer(
+                user,
+                data=request.data,
+                partial=True,
+                context={"request": request}
+            )
             if serializer.is_valid():
                 serializer.save()
-                return Response({"avatar": serializer.data['avatar']}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"avatar": serializer.data['avatar']},
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         user.avatar = None
         user.save()
-        return Response("Аватар успешно удален")
-        
+        return Response(
+            "Аватар успешно удален",
+            status=status.HTTP_204_NO_CONTENT
+        )
 
-        
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     http_allowed_methods = ['get',]
     pagination_class = None
+
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
@@ -139,4 +151,50 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    pass
+    queryset = Recipe.objects.all()
+    http_allowed_methods = ['get', 'post', 'delete', 'patch']
+
+    def get_serializer_class(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return serializers.RecipeGetSerializer
+        return serializers.RecipeSerializer
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=[IsAuthenticated,]
+    )
+    def shopping_cart(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        recipe_in_shoping_cart = ShopingList.objects.filter(
+                user=request.user,
+                recipe=recipe
+            ).exists()
+        # raise ValueError(f'{recipe_in_shoping_cart}')
+        # if request.method == "POST":
+        #     serializer = serializers.ShopingListSerializer(
+        #         data=request.data,
+        #         context={'user': request.user, 'recipe': recipe})
+        #     if recipe_in_shoping_cart:
+        #         return Response(
+        #             'Рецепт уже добавлен в список покупок!',
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+        #     serializer.is_valid(raise_exception=True)
+        #     serializer.save(user=request.user, recipe=recipe)
+        #     return Response(
+        #         {'Рецепт успешно добавлен в список покупок': serializer.data},
+        #         status=status.HTTP_201_CREATED
+        #     )
+        # if not recipe_in_shoping_cart:
+        #     return Response(
+        #         {"errors": "Рецепт отсутствует в списке покупок"},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+        # ShopingList.objects.get(user=request.user,recipe=recipe).delete()
+        # return Response(
+        #     'Рецепт успешно удалён из списка покупок',
+        #     status=status.HTTP_204_NO_CONTENT
+        # )
+
+

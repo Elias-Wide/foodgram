@@ -33,6 +33,12 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения'
     )
 
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'ингредиенты'
+        ordering = ('name',)
+        default_related_name = 'ingredient'
+
 
 class Recipe(models.Model):
     author = models.ForeignKey(
@@ -71,7 +77,7 @@ class Recipe(models.Model):
     def str(self):
         return self.text
 
-class IngredientAmount(models.Model):
+class AmountIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         related_name='recipe_ingredients',
@@ -134,30 +140,31 @@ class Favorite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique_ingredients')]
+                name='Уникальй рецепт'
+            ),
+        ]
 
 
-# class ShopingCart(models.Model):
-#     user = models.ForeignKey(
-#         User,
-#         related_name='bucket',
-#         on_delete=models.CASCADE
-#     ),
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         related_name='bucket'
-#     )
+class ShopingList(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+    )
 
-#     # class Meta:
-#     #     verbose_name = 'Список покупок'
-#     #     verbose_name_plural = 'списки покупок'
-#     #     constraints = [
-#     #         models.UniqueConstraint(
-#     #             fields=['user', 'recipe'],
-#     #             name='unique_bucket'
-#     #         )
-#     #     ]
+    class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'списки покупок'
+        default_related_name = 'shoping_list'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_shoping_list'
+            )
+        ]
 
-#     def __str__(self):
-#         return f'{self.recipe}'
+    def __str__(self):
+        return f'{self.recipe}'

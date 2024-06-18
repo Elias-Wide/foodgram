@@ -47,8 +47,8 @@ class User(AbstractUser):
 
     class Meta:
         default_related_name = 'profile'
-        verbose_name = 'User profile'
-        verbose_name_plural = 'user profiles'
+        verbose_name = 'Профиль пользователя'
+        verbose_name_plural = 'профили пользователей'
 
     def __str__(self) -> str:
         return self.username

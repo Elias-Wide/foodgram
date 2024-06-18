@@ -36,5 +36,5 @@ class RecipeAdmin(admin.ModelAdmin):
     list_editable = ('cooking_time',)
 
 
-admin.site.empty_value_display = 'Not specified'
+admin.site.empty_value_display = 'Не задано'
 admin.site.unregister(auth.models.Group)
