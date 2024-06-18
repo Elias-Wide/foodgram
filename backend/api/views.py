@@ -111,18 +111,18 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated,]
     )
     def avatar(self, request):
-        user=request.user
+        user = request.user
         if request.method == 'PUT':
-            serializer = serializers.AvatarSerializer(
-                user,
-                data=request.data,
-            )
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
-        # if request.method == 'DELETE':
-        #     user.avatar = None
-        #     user.save()
-        #     return Response('Аватар успешно удален')
+            serializer = serializers.UserProfileSerializer(user, data=request.data, partial=True, context={"request": request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"avatar": serializer.data['avatar']}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user.avatar = None
+        user.save()
+        return Response("Аватар успешно удален")
+        
+
         
 
 class TagViewSet(viewsets.ModelViewSet):

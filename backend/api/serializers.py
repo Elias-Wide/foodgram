@@ -128,7 +128,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    # avatar = Base64ImageField(required=False, allow_null=True)
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         
@@ -199,11 +199,3 @@ class SetPasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
-
-
-class AvatarSerializer(serializers.Serializer):
-    avatar = Base64ImageField(required=True, allow_null=True)
-
-    class Meta:
-        model = User
-        fields = ('avatar')
