@@ -2,7 +2,6 @@ from django.urls import include, path
 from rest_framework.authtoken import views
 from rest_framework.routers import SimpleRouter
 
-from api.constants import API_VERSION
 from api.views import (IngredientViewSet, RecipeViewSet, TagViewSet, UserViewSet)
 
 

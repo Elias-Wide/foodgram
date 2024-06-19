@@ -3,6 +3,7 @@ from rest_framework.response import Response
 
 from recipes.models import AmountIngredient
 
+
 def shopping_list_pdf(user):
     text_shop_list = 'Список покупок \n\n'
     measurement_unit = {}
@@ -13,12 +14,23 @@ def shopping_list_pdf(user):
         'ingredient__name', 'ingredient__measurement_unit', 'amount')
     for ingredient in ingridients:
         if ingredient['ingredient__name'] in ingridient_amount:
-            ingridient_amount[ingredient['ingredient__name']] +=  ingredient['amount']
+            ingridient_amount[
+                ingredient['ingredient__name']
+            ] += ingredient['amount']
         else:
-            measurement_unit[ingredient['ingredient__name']] = ingredient['ingredient__measurement_unit']
-            ingridient_amount[ingredient['ingredient__name']] =  ingredient['amount']
+            measurement_unit[
+                ingredient['ingredient__name']
+            ] = ingredient['ingredient__measurement_unit']
+            ingridient_amount[
+                ingredient['ingredient__name']
+            ] = ingredient['amount']
     for ingredient, amount in ingridient_amount .items():
-        text_shop_list += f'{ingredient} - {amount} {measurement_unit[ingredient]}\n'
+        text_shop_list += (
+            f'{ingredient} - {amount}'
+            f'{measurement_unit[ingredient]}\n'
+        )
     response = HttpResponse(text_shop_list, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+    response[
+        'Content-Disposition'
+    ] = 'attachment; filename="shopping_list.txt"'
     return response

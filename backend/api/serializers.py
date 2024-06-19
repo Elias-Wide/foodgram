@@ -144,10 +144,22 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def get_is_favorited(self, obj):
-        return False
+        return self.get_chosen_recipe(obj, Favorite)
+
 
     def get_is_in_shopping_cart(self, obj):
-        return False
+        return self.get_chosen_recipe(obj, ShopingList)
+
+    def get_chosen_recipe(self, obj, model):
+        """
+        Метод получения статуса выбранного рецепта.
+        Используется для избранного и списка покупок.
+        """
+        return model.objects.filter(
+            user=self.context.get('request').user,
+            recipe=obj
+        ).exists()
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     ingredients = AmountIngredientCreateSerializer(many=True)
@@ -157,6 +169,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField()
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Recipe
         fields = ('ingredients', 'tags', 'image',
@@ -188,6 +201,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         super().update(instance, validated_data)
         return instance
+
 
 class RecipeSubSerializer(serializers.ModelSerializer):
 
@@ -222,28 +236,9 @@ class SubscribeSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
-
         model = Subscription
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
-
-    def validate(self, data):
-        user = self.context.get('user')
-        author = self.context.get('author')
-        if user == author:
-            raise ValidationError(
-                "Нельзя подписаться на самого себя!",
-                code=status.HTTP_400_BAD_REQUEST)
-        if Subscription.objects.filter(
-            author=author,
-            user=user
-        ).exists():
-            raise ValidationError(
-                "Вы уже подписаны на данного автора!",
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        return data
-
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
 
     def get_is_subscribed(self, obj):
         if not obj.user:
@@ -251,7 +246,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return Subscription.objects.filter(
                 user=obj.user,
                 author=obj.author).exists()
-
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -290,5 +284,3 @@ class SetPasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
-
-

@@ -1,9 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import CheckConstraint, Q
-
 
 from users.constants import (
     EMAIL_FIELD_LENGTH,

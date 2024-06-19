@@ -1,19 +1,13 @@
-import base64
-import re
-import secrets
-import string
+from typing import Any
+from django_filters.rest_framework import DjangoFilterBackend
 
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, status
+from rest_framework import serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 
-from api.constants import (
-    EMAIL_FIELD_LENGTH , MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT, USERNAME_LENGTH, ERROR_MESSAGES
-)
-from recipes.models import AmountIngredient, Favorite, Ingredient, ShopingList, Subscription, Recipe, Tag
 from users.models import User
 
 class ChosenRecipeMixin(serializers.ModelSerializer):
@@ -25,3 +19,8 @@ class ChosenRecipeMixin(serializers.ModelSerializer):
     )
     cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
 
+
+class IngridientTagMixin(viewsets.ModelViewSet):
+    http_allowed_methods = ['get',]
+    pagination_class = None
+    filter_backends = [DjangoFilterBackend]

@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -11,6 +11,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api import serializers
 from api.constants import ERROR_MESSAGES
+from api.filters import IngredientFilter, RecipeFilter, TagFilter
+from api.mixins import IngridientTagMixin
 from api.services import shopping_list_pdf
 from recipes.models import  Ingredient, Recipe, ShopingList, Subscription, Tag
 from shortener import shortener
@@ -50,19 +52,31 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, pk):
         author = get_object_or_404(User, id=self.kwargs.get('pk'))
         user = self.request.user
+        is_subscription_exist = Subscription.objects.filter(
+            author=author,
+            user=user
+        ).exists()
         if request.method == 'POST':
+            if user == author:
+                return Response(
+                    {'errors': 'Нельзя подписаться на самого себя!'},
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+            if is_subscription_exist:
+                return Response(
+                    {'erros': 'Вы уже подписаны на данного автора!'}
+                )
             serializer = serializers.SubscribeSerializer(
                 data=request.data,
-                context={"author": author, "user": user,},
+                context={'author': author, 'user': user,'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(user=user, author=author)
-            return Response({'Подписка успешно создана': serializer.data},
+            return Response(
+                {'Подписка успешно создана': serializer.data},
                 status=status.HTTP_201_CREATED
             )
-        if Subscription.objects.filter(
-            user=user, author=author
-        ).exists():
+        if is_subscription_exist:
             Subscription.objects.get(user=user, author=author).delete()
             return Response("Успешная отписка",
                             status=status.HTTP_204_NO_CONTENT)
@@ -138,23 +152,23 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(IngridientTagMixin):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
-    http_allowed_methods = ['get',]
-    pagination_class = None
+    filterset_class = TagFilter
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(IngridientTagMixin):
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
-    http_allowed_methods = ['get',]
-    pagination_class = None
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_allowed_methods = ['get', 'post', 'delete', 'patch']
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.request.method in permissions.SAFE_METHODS:
@@ -182,10 +196,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated,],
         serializer_class = serializers.FavoriteSerializer
     )
-    def favorite(self, request, id):
+    def favorite(self, request, pk):
         return add_delete_choosen_recipe(
             request=request,
-            recipe=get_object_or_404(Recipe, id=id),
+            recipe=get_object_or_404(Recipe, id=pk),
             serializer_class=self.serializer_class,
             model=self.serializer_class.Meta.model,
             error_key="FAVORITE"
@@ -210,7 +224,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name='get-link',
     )
     def get_link(self, request, pk):
-        original_url = request.build_absolute_uri()
+        original_url = request.build_absolute_uri().replace('get_link/', '')
         short_link =  shortener.create(request.user, original_url)
         final_short_link = original_url.replace(
             request.get_full_path(), ''

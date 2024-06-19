@@ -1,11 +1,19 @@
 from django.db import models
 
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.constants import MEASUREMENT_UNIT_LENTH, TEXT_FIELD_LENGTH
-from recipes.constants import MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT
+from api.constants import (
+    MAX_LENTH_IN_ADMIN,
+    MEASUREMENT_UNIT_LENTH,
+    TEXT_FIELD_LENGTH
+)
+from recipes.constants import (
+    MIN_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT,
+)
 from users.models import User, User
+
 
 class Tag(models.Model):
     name = models.CharField(
@@ -18,7 +26,7 @@ class Tag(models.Model):
         verbose_name = 'Тэг'
         verbose_name_plural = 'тэги'
         ordering = ('name',)
-        default_related_name = 'tag'
+        default_related_name = 'tags'
 
     def __str__(self):
         return self.name
@@ -40,6 +48,9 @@ class Ingredient(models.Model):
         ordering = ('name',)
         default_related_name = 'ingredient'
 
+    def __str__(self) -> str:
+        return self.name 
+
 
 class Recipe(models.Model):
     author = models.ForeignKey(
@@ -51,7 +62,7 @@ class Recipe(models.Model):
         max_length=TEXT_FIELD_LENGTH,
         verbose_name='Название рецепта'
     )
-    text = models.TextField(verbose_name='Recipes description')
+    text = models.TextField(verbose_name='Рецепт')
     image = models.ImageField(blank=False, upload_to="recipe_images/")
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -59,7 +70,7 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Тэги  '
+        verbose_name='Тэги'
     )
     cooking_time = models.IntegerField(
         validators=(MinValueValidator(MIN_COOKING_TIME),),
@@ -77,7 +88,7 @@ class Recipe(models.Model):
         default_related_name = 'recipe'
 
     def str(self):
-        return self.text
+        return self.text[:TEXT_FIELD_LENGTH_IN_ADMIN]
 
 class AmountIngredient(models.Model):
     recipe = models.ForeignKey(
@@ -169,4 +180,4 @@ class ShopingList(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe}'
+        return f'{self.recipe}'[MAX_LENTH_IN_ADMIN]
