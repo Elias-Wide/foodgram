@@ -12,6 +12,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api import serializers
 from api.constants import ERROR_MESSAGES
+from api.services import shopping_list_pdf
 from recipes.models import  Ingredient, Recipe, ShopingList, Subscription, Tag
 from users.models import User
 
@@ -181,22 +182,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated,],
         serializer_class = serializers.FavoriteSerializer
     )
-    def favorite(self, request, pk):
+    def favorite(self, request, id):
         return add_delete_choosen_recipe(
             request=request,
-            recipe=get_object_or_404(Recipe, id=pk),
+            recipe=get_object_or_404(Recipe, id=id),
             serializer_class=self.serializer_class,
             model=self.serializer_class.Meta.model,
             error_key="FAVORITE"
         )
 
+    @action(
+        ['GET'],
+        detail=False,
+        permission_classes=[IsAuthenticated,],
+    )
+    def download_shopping_cart(self, request):
+        if not request.user.shoping_list.exists():
+            return Response(
+                'Список покупок пуст.',
+                status=status.HTTP_404_NOT_FOUND
+            )
+        return shopping_list_pdf(user=request.user) 
+
 
 def add_delete_choosen_recipe(request, recipe, serializer_class, model, error_key):
     """
-    Объединенная функция добавления/удаления рецепта
+    Объединенная функция добавления/удаления рецепта.
     Выбранный рецепт может быть удален или добавлен либо в список покупок,
     либо в избранное, в зависимости от используемого представления.
-    Выводится соотвествующее запросу и действию сообщение.
+    Выводится соотвествующее запросу и модели сообщение.
     """
     recipe_in_shoping_cart = model.objects.filter(
             user=request.user,
