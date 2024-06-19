@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import shortener 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +28,8 @@ INSTALLED_APPS = [
     'api',
     'recipes',
     'users',
-    'django_filters'
+    'django_filters',
+    'shortener'
 ]
 
 MIDDLEWARE = [
@@ -122,3 +124,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SHORTENER_LIFESPAN = 43200
+SHORTENER_MAX_USES = 5

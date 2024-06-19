@@ -1,4 +1,3 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, permissions, status, views, viewsets
@@ -14,6 +13,7 @@ from api import serializers
 from api.constants import ERROR_MESSAGES
 from api.services import shopping_list_pdf
 from recipes.models import  Ingredient, Recipe, ShopingList, Subscription, Tag
+from shortener import shortener
 from users.models import User
 
 
@@ -202,7 +202,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'Список покупок пуст.',
                 status=status.HTTP_404_NOT_FOUND
             )
-        return shopping_list_pdf(user=request.user) 
+        return shopping_list_pdf(user=request.user)
+
+    @action(
+        ['GET'],
+        detail=True,
+        url_name='get-link',
+    )
+    def get_link(self, request, pk):
+        original_url = request.build_absolute_uri()
+        short_link =  shortener.create(request.user, original_url)
+        final_short_link = original_url.replace(
+            request.get_full_path(), ''
+        ) + '/s/' + short_link
+        return Response({'short-link': final_short_link})
 
 
 def add_delete_choosen_recipe(request, recipe, serializer_class, model, error_key):

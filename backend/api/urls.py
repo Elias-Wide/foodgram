@@ -6,7 +6,7 @@ from api.constants import API_VERSION
 from api.views import (IngredientViewSet, RecipeViewSet, TagViewSet, UserViewSet)
 
 
-# app_name = 'api'
+app_name = 'api'
 
 router = SimpleRouter()
 

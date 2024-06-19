@@ -46,7 +46,7 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
 
     class Meta:
-        default_related_name = 'profile'
+        default_related_name = 'user'
         verbose_name = 'Профиль пользователя'
         verbose_name_plural = 'профили пользователей'
 

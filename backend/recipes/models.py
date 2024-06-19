@@ -18,6 +18,7 @@ class Tag(models.Model):
         verbose_name = 'Тэг'
         verbose_name_plural = 'тэги'
         ordering = ('name',)
+        default_related_name = 'tag'
 
     def __str__(self):
         return self.name
@@ -44,7 +45,6 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipe',
         verbose_name='Автор рецепта'
     )
     name = models.CharField(
@@ -52,27 +52,29 @@ class Recipe(models.Model):
         verbose_name='Название рецепта'
     )
     text = models.TextField(verbose_name='Recipes description')
-    image = models.ImageField(blank=False, upload_to="images/recipes/")
+    image = models.ImageField(blank=False, upload_to="recipe_images/")
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name='recipe',
         verbose_name='Ингредиенты'
     )
     tags = models.ManyToManyField(
         Tag,
-        related_name='recipe',
         verbose_name='Тэги  '
     )
     cooking_time = models.IntegerField(
         validators=(MinValueValidator(MIN_COOKING_TIME),),
         verbose_name='Время приготовления'
     )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'рецепты'
-        ordering = ('name',)
-        default_related_name = 'recipes'
+        ordering = ('pub_date',)
+        default_related_name = 'recipe'
 
     def str(self):
         return self.text
@@ -111,7 +113,7 @@ class Subscription(models.Model):
     )
     author = models.ForeignKey(
         User,
-        related_name='subscription',
+        related_name='following',
         on_delete=models.CASCADE
     )
     class Meta:
@@ -126,10 +128,12 @@ class Subscription(models.Model):
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
+        related_name='user',
         on_delete=models.CASCADE
     )
     recipe = models.ForeignKey(
         Recipe,
+        related_name='recipe',
         on_delete=models.CASCADE
     )
     class Meta:
@@ -141,7 +145,6 @@ class Favorite(models.Model):
                 name='unique_favorite_recipe'
             ),
         ]
-        default_related_name = 'favorite'
 
 
 class ShopingList(models.Model):
