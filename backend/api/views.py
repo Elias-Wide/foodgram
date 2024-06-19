@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api import serializers
+from api.constants import ERROR_MESSAGES
 from recipes.models import  Ingredient, Recipe, ShopingList, Subscription, Tag
 from users.models import User
 
@@ -162,39 +163,68 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated,],
+        serializer_class = serializers.ShopingListSerializer
     )
     def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        recipe_in_shoping_cart = ShopingList.objects.filter(
-                user=request.user,
-                recipe=recipe
-            ).exists()
-        # raise ValueError(f'{recipe_in_shoping_cart}')
-        # if request.method == "POST":
-        #     serializer = serializers.ShopingListSerializer(
-        #         data=request.data,
-        #         context={'user': request.user, 'recipe': recipe})
-        #     if recipe_in_shoping_cart:
-        #         return Response(
-        #             'Рецепт уже добавлен в список покупок!',
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
-        #     serializer.is_valid(raise_exception=True)
-        #     serializer.save(user=request.user, recipe=recipe)
-        #     return Response(
-        #         {'Рецепт успешно добавлен в список покупок': serializer.data},
-        #         status=status.HTTP_201_CREATED
-        #     )
-        # if not recipe_in_shoping_cart:
-        #     return Response(
-        #         {"errors": "Рецепт отсутствует в списке покупок"},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        # ShopingList.objects.get(user=request.user,recipe=recipe).delete()
-        # return Response(
-        #     'Рецепт успешно удалён из списка покупок',
-        #     status=status.HTTP_204_NO_CONTENT
-        # )
+        return add_delete_choosen_recipe(
+            request=request,
+            recipe=get_object_or_404(Recipe, id=pk),
+            serializer_class=self.serializer_class,
+            model=self.serializer_class.Meta.model,
+            error_key="SHOP_LIST"
+        )
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=[IsAuthenticated,],
+        serializer_class = serializers.FavoriteSerializer
+    )
+    def favorite(self, request, pk):
+        return add_delete_choosen_recipe(
+            request=request,
+            recipe=get_object_or_404(Recipe, id=pk),
+            serializer_class=self.serializer_class,
+            model=self.serializer_class.Meta.model,
+            error_key="FAVORITE"
+        )
 
 
+def add_delete_choosen_recipe(request, recipe, serializer_class, model, error_key):
+    """
+    Объединенная функция добавления/удаления рецепта
+    Выбранный рецепт может быть удален или добавлен либо в список покупок,
+    либо в избранное, в зависимости от используемого представления.
+    Выводится соотвествующее запросу и действию сообщение.
+    """
+    recipe_in_shoping_cart = model.objects.filter(
+            user=request.user,
+            recipe=recipe
+        ).exists()
+    if request.method == "POST":
+        serializer = serializer_class(
+            data=request.data,
+            context={'user': request.user, 'recipe': recipe}
+        )
+        if recipe_in_shoping_cart:
+            return Response(
+                ERROR_MESSAGES['ALREADY_IN'][error_key],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, recipe=recipe)
+        return Response(
+            {ERROR_MESSAGES['SUCCES_ADD'][error_key]: serializer.data},
+            status=status.HTTP_201_CREATED
+        )
+    if not recipe_in_shoping_cart:
+        return Response(
+            ERROR_MESSAGES['NOT_EXIST'][error_key],
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    model.objects.get(user=request.user,recipe=recipe).delete()
+    return Response(
+        ERROR_MESSAGES['SUCCES_DELETE'][error_key],
+        status=status.HTTP_204_NO_CONTENT
+    )

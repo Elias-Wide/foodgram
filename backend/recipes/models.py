@@ -126,12 +126,10 @@ class Subscription(models.Model):
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
-        related_name='cook',
         on_delete=models.CASCADE
     )
     recipe = models.ForeignKey(
         Recipe,
-        related_name='featured_recipe',
         on_delete=models.CASCADE
     )
     class Meta:
@@ -140,9 +138,10 @@ class Favorite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='Уникальй рецепт'
+                name='unique_favorite_recipe'
             ),
         ]
+        default_related_name = 'favorite'
 
 
 class ShopingList(models.Model):

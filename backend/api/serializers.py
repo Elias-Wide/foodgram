@@ -13,7 +13,8 @@ from rest_framework.exceptions import ValidationError
 from api.constants import (
     EMAIL_FIELD_LENGTH , MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT, USERNAME_LENGTH
 )
-from recipes.models import Ingredient, AmountIngredient, ShopingList, Subscription, Recipe, Tag
+from api.mixins import ChosenRecipeMixin
+from recipes.models import AmountIngredient, Favorite, Ingredient, ShopingList, Subscription, Recipe, Tag
 from users.models import User
 
 
@@ -194,31 +195,18 @@ class RecipeSubSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time',)
 
-class ShopingListSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(source='recipe', read_only=True)
-    name = serializers.ReadOnlyField(source='recipe.name')
-    image = serializers.ImageField(
-        source='recipe.image',
-        read_only=True
-    )
-    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
+
+class ShopingListSerializer(ChosenRecipeMixin):
 
     class Meta:
         model = ShopingList
         fields = ('id', 'name', 'image', 'cooking_time',)
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(source='recipe', read_only=True)
-    name = serializers.ReadOnlyField(source='recipe.name')
-    image = serializers.ImageField(
-        source='recipe.image',
-        read_only=True
-    )
-    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
+class FavoriteSerializer(ChosenRecipeMixin):
 
     class Meta:
-        model = ShopingList
+        model = Favorite
         fields = ('id', 'name', 'image', 'cooking_time',)
 
 
