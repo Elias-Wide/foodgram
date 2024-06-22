@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-import shortener 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,7 +28,7 @@ INSTALLED_APPS = [
     'recipes',
     'users',
     'django_filters',
-    'shortener'
+    'urlshortner',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +95,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
 }
 
@@ -127,6 +126,3 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-SHORTENER_LIFESPAN = 43200
-SHORTENER_MAX_USES = 5

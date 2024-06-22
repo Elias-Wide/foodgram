@@ -8,6 +8,7 @@ class RecipeInline(admin.StackedInline):
     model = Recipe
     extra = 0
 
+
 @admin.register(User)
 class User(admin.ModelAdmin):
     inlines = (RecipeInline,)

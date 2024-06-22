@@ -12,4 +12,4 @@ requests==2.26.0
 djoser==2.1.0
 PyYAML==6.0
 load_dotenv==0.1.0
-django-link-shortener==0.5
+django-urlshortner==0.0.2

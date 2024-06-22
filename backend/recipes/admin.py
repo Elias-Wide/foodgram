@@ -1,8 +1,8 @@
-from django.contrib.auth import admin
 from django.contrib import admin, auth
 from rest_framework.authtoken.models import TokenProxy
 
-from recipes.models import  AmountIngredient, Ingredient, Recipe, Tag
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
+
 
 class RecipeIngredientInline(admin.TabularInline):
     model = AmountIngredient
@@ -39,7 +39,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     search_fields = ('name', 'author__username', 'ingredients__name')
     list_filter = ('tags', 'pub_date',)
-    list_editable = ('name','cooking_time',)
+    list_editable = ('name', 'cooking_time',)
     filter_horizontal = ('tags', 'ingredients')
 
     def in_favorite_amount(self, obj):
@@ -47,7 +47,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     in_favorite_amount.short_description = 'В избранном'
 
+
 admin.site.empty_value_display = 'Не задано'
 admin.site.unregister(auth.models.Group)
 admin.site.unregister(TokenProxy)
-# admin.site.unregister(auth.models.Group)

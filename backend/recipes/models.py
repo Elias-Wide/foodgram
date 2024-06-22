@@ -1,5 +1,3 @@
-from django.db import models
-
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -12,7 +10,7 @@ from recipes.constants import (
     MIN_COOKING_TIME,
     MIN_INGREDIENT_AMOUNT,
 )
-from users.models import User, User
+from users.models import User
 
 
 class Tag(models.Model):
@@ -35,7 +33,8 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=TEXT_FIELD_LENGTH,
-        verbose_name='Ингредиент'
+        verbose_name='Ингредиент',
+        unique=True
     )
     measurement_unit = models.CharField(
         max_length=MEASUREMENT_UNIT_LENTH,
@@ -47,9 +46,14 @@ class Ingredient(models.Model):
         verbose_name_plural = 'ингредиенты'
         ordering = ('name',)
         default_related_name = 'ingredient'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='Uniqaue ingredient')
+        ]
 
     def __str__(self) -> str:
-        return self.name 
+        return self.name
 
 
 class Recipe(models.Model):
@@ -86,9 +90,15 @@ class Recipe(models.Model):
         verbose_name_plural = 'рецепты'
         ordering = ('pub_date',)
         default_related_name = 'recipe'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'author'],
+                name='unique_recipe')
+        ]
 
     def str(self):
-        return self.text[:TEXT_FIELD_LENGTH_IN_ADMIN]
+        return self.text
+
 
 class AmountIngredient(models.Model):
     recipe = models.ForeignKey(
@@ -110,10 +120,6 @@ class AmountIngredient(models.Model):
     class Meta:
         verbose_name = 'Cостав рецепта'
         verbose_name_plural = 'Состав рецепта'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['recipe', 'ingredient'],
-                name='Количество ингредиента')]
 
 
 class Subscription(models.Model):
@@ -127,13 +133,15 @@ class Subscription(models.Model):
         related_name='following',
         on_delete=models.CASCADE
     )
+
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='уникальные подписки')]
+                name='unique_subs')
+        ]
 
 
 class Favorite(models.Model):
@@ -147,6 +155,7 @@ class Favorite(models.Model):
         related_name='recipe',
         on_delete=models.CASCADE
     )
+
     class Meta:
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'избранные рецепты'
@@ -180,4 +189,4 @@ class ShopingList(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe}'[MAX_LENTH_IN_ADMIN]
+        return f'{self.recipe}'[:MAX_LENTH_IN_ADMIN]

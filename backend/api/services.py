@@ -1,10 +1,9 @@
 from django.http import HttpResponse
-from rest_framework.response import Response
 
 from recipes.models import AmountIngredient
 
 
-def shopping_list_pdf(user):
+def shopping_list_txt(user):
     text_shop_list = 'Список покупок \n\n'
     measurement_unit = {}
     ingridient_amount = {}

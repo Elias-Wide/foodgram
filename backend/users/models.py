@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 from users.constants import (
     EMAIL_FIELD_LENGTH,
@@ -15,7 +18,8 @@ from users.constants import (
 class User(AbstractUser):
     email = models.EmailField(
         unique=True,
-        max_length=EMAIL_FIELD_LENGTH
+        max_length=EMAIL_FIELD_LENGTH,
+        verbose_name='Электронная почта'
     )
     username = models.CharField(
         verbose_name='Логин', max_length=USERNAME_LENGTH, unique=True
@@ -52,3 +56,10 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == ADMIN_ROLE_NAME
+
+    @receiver(post_save, sender='users.User')
+    def set_admin_role_for_superuser(sender, instance, created, **kwargs):
+        if created:
+            if instance.is_superuser:
+                instance.role = ADMIN_ROLE_NAME
+                instance.save()

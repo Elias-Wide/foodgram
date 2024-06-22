@@ -6,8 +6,7 @@ MAX_LENTH_IN_ADMIN: int = 20
 TEXT_FIELD_LENGTH: int = 255
 USERNAME_LENGTH: int = 150
 
-
-ERROR_MESSAGES: dict = {
+ERROR_MESSAGES: dict[dict[str]] = {
     'ALREADY_IN': {
         "FAVORITE": 'Рецепт уже добавлен в избранное!',
         'SHOP_LIST': 'Рецепт уже добавлен в список покупок!'
@@ -23,5 +22,15 @@ ERROR_MESSAGES: dict = {
     "SUCCES_DELETE": {
         'FAVORITE': 'Рецепт успешно удален из избранного.',
         'SHOP_LIST': 'Рецепт успешно удален из списка покупок.'
+    },
+}
+RECIPE_VALIDATION_MESSAGES: dict[dict[str]] = {
+    'EMPTY': {
+        'ingredients': 'Необходимо добавить ингредиенты',
+        'tags': 'Необходимо указать тэги'
+    },
+    'NOT_UNIQUE': {
+        'ingredients': 'Ингредиенты повторяются!',
+        'tags': 'Укажите только уникальные тэги!'
     },
 }
