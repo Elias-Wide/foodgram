@@ -34,7 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ['GET'],
         detail=False,
         url_name='current_user',
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated, ]
     )
     def me(self, request):
         serializer = serializers.UserProfileSerializer(
@@ -47,7 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ['POST', 'DELETE'],
         detail=True,
         url_name='subscribe',
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated, ]
     )
     def subscribe(self, request, pk):
         author = get_object_or_404(User, id=self.kwargs.get('pk'))
@@ -87,7 +87,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ['GET'],
         detail=False,
         url_name='get_subscriptions',
-        permission_classes=[IsAuthenticated,],
+        permission_classes=[IsAuthenticated, ],
     )
     def subscriptions(self, request):
         paginate_subs = self.paginate_queryset(
@@ -104,7 +104,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ['POST'],
         detail=False,
         url_name='set_new_password',
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated, ]
     )
     def set_password(self, request):
         serializer = serializers.SetPasswordSerializer(
@@ -125,7 +125,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ['PUT', 'DELETE'],
         detail=False,
         url_path='me/avatar',
-        permission_classes=[IsAuthenticated,],
+        permission_classes=[IsAuthenticated, ],
         url_name='set_avatar'
     )
     def avatar(self, request):
@@ -196,7 +196,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated,],
+        permission_classes=[IsAuthenticated, ],
     )
     def favorite(self, request, pk=None):
         if request.method == 'POST':
@@ -231,7 +231,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         ['GET'],
         detail=False,
-        permission_classes=[IsAuthenticated,],
+        permission_classes=[IsAuthenticated, ],
     )
     def download_shopping_cart(self, request):
         if not request.user.shoping_list.exists():
@@ -246,7 +246,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path='get-link',
         url_name='get-link',
-        permission_classes=[AllowAny,]
+        permission_classes=[AllowAny, ]
     )
     def get_link(self, request, pk):
         original_url = request.build_absolute_uri(
