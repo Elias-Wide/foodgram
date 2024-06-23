@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from urlshortner.utils import shorten_url
 
 from api import serializers
-from api.constants import ERROR_MESSAGES
+from foodgramm_backend.constants import ERROR_MESSAGES
 from api.filters import IngredientFilter, RecipeFilter, TagFilter
 from api.mixins import IngridientTagMixin
 from api.permissions import IsAuthorOrReadOnly
@@ -20,9 +20,21 @@ from users.models import User
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для регистрации и получения/редактирования данных пользователя.
+    actions(доступны только зарегистрированным пользователям):
+    me - получение данных текущего авторизованного пользователя.
+    subscribe - создание подписки на выбранного пользователя.
+    subscriptions - просмотр собственных подписок на других авторов.
+    avatar - загрузка аватара в профиль.
+
+    Args:
+        viewsets (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
-    serializer_class = serializers.SignUpSerializer
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -160,18 +172,34 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(IngridientTagMixin):
+    """
+    Вью для просмотра тэгов.
+    Доступно всем пользователям.
+    """
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     filterset_class = TagFilter
 
 
 class IngredientViewSet(IngridientTagMixin):
+    """
+    Вью для просмотра ингредиентов.
+    Доступно всем пользователям.
+    """
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
     filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет создания/удаления/редактирования/получения рецептов.
+    Созданы action для добавления рецептов в избранное/список покупок.
+    Список покупок можно качать в формате txt.
+    Просмотр рецептов доступен всем пользователям,
+    редактирование/удаления - автору рецепта или админу.
+    Добавить в избранное/список покупок может зарегистрированный пользователь.
+    """
     queryset = Recipe.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter

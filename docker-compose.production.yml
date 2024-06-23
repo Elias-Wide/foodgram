@@ -12,9 +12,7 @@ services:
     env_file:
       - .env
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: eliaswide/foodgram_backend
     env_file: .env
     depends_on:
       - db
@@ -24,13 +22,11 @@ services:
       - static:/backend_static
       - media:/app/media
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: eliaswide/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
-    container_name: foodgram-proxy
+    container_name: eliaswide/foodgram-proxy
     image: nginx:1.25.4-alpine
     ports:
       - "80:80"

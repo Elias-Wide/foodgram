@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.constants import (
+from foodgramm_backend.constants import (
     MAX_LENTH_IN_ADMIN,
     MEASUREMENT_UNIT_LENTH,
     TEXT_FIELD_LENGTH

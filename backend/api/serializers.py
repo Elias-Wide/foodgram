@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from api.constants import (
+from foodgramm_backend.constants import (
     EMAIL_FIELD_LENGTH, MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT,
     RECIPE_VALIDATION_MESSAGES, USERNAME_LENGTH
 )
@@ -70,6 +70,10 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор данных модели User.
+    Используется при get-запросах.
+    """
     is_subscribed = serializers.SerializerMethodField()
     avatar = Base64ImageField(required=False, allow_null=True)
 
@@ -92,31 +96,37 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-
+    """Сериализатор данных модели Tag."""
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-
+    """Сериализатор данных модели Ingredient."""
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
-class AmountIngredientCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
-    amount = serializers.IntegerField(min_value=MIN_INGREDIENT_AMOUNT)
+# class AmountIngredientCreateSerializer(serializers.ModelSerializer):
+#     """
+#     Сериализатор для промежуточной модели между Recipe и Iingredient.
+#     """
+#     id = serializers.PrimaryKeyRelatedField(
+#         queryset=Ingredient.objects.all()
+#     )
+#     amount = serializers.IntegerField(min_value=MIN_INGREDIENT_AMOUNT)
 
-    class Meta:
-        model = AmountIngredient
-        fields = ('id', 'amount')
+#     class Meta:
+#         model = AmountIngredient
+#         fields = ('id', 'amount')
 
 
 class AmountIngredientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для промежуточной модели между Recipe и Ingredient.
+    """
     id = serializers.IntegerField(source='ingredient.id',)
     name = serializers.CharField(source='ingredient.name')
     measurement_unit = serializers.CharField(
@@ -299,6 +309,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
 
 class SetPasswordSerializer(serializers.Serializer):
+    """"""
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
