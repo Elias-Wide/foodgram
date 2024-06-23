@@ -186,7 +186,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated,],
+        permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
