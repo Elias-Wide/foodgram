@@ -25,7 +25,7 @@ services:
     image: eliaswide/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
-  nginx:
+  gateway:
     container_name: eliaswide/foodgram-proxy
     image: nginx:1.25.4-alpine
     ports:

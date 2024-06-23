@@ -10,7 +10,6 @@ djangorestframework-simplejwt==4.7.2
 Pillow==9.3.0
 PyJWT==2.1.0
 requests==2.26.0
-djoser==2.1.0
 PyYAML==6.0
 load_dotenv==0.1.0
 django-urlshortner==0.0.2
