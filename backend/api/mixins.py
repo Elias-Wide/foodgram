@@ -3,6 +3,7 @@ from rest_framework import mixins, permissions, viewsets
 
 from recipes.models import AmountIngredient
 
+
 class IngridientTagMixin(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -23,15 +24,17 @@ class AmountMixin():
                     recipe=recipe,
                     ingredient=ingredient['id'],
                     amount=ingredient['amount']
-                    )
+                )
             )
         AmountIngredient.objects.bulk_create(ingredient_list)
 
 
 class ChosenMixin():
+
     def get_chosen_recipe(self, obj, model) -> bool:
         """
         Метод получения статуса выбранного рецепта.
+
         Используется для избранного и списка покупок.
         """
         if self.context['request'].user.is_anonymous:

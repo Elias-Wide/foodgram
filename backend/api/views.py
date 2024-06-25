@@ -3,10 +3,10 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from urlshortner.utils import shorten_url
+from urlshortner.models import Url
 
 from api import serializers
 from foodgramm_backend.constants import ERROR_MESSAGES
@@ -22,12 +22,14 @@ from users.models import User
 
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для регистрации и получения/редактирования данных пользователя.
+
     actions(доступны только зарегистрированным пользователям):
     me - получение данных текущего авторизованного пользователя.
     subscribe - создание подписки на выбранного пользователя.
     subscriptions - просмотр собственных подписок на других авторов.
     avatar - загрузка аватара в профиль.
     """
+
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
 
@@ -82,7 +84,6 @@ class UserViewSet(viewsets.ModelViewSet):
             {'errors': 'Вы не подписаны на данного автора'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
 
     @action(
         ['GET'],
@@ -163,8 +164,10 @@ class UserViewSet(viewsets.ModelViewSet):
 class TagViewSet(IngridientTagMixin):
     """
     Вью для просмотра тэгов.
+
     Доступно всем пользователям.
     """
+
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     filterset_class = TagFilter
@@ -173,8 +176,10 @@ class TagViewSet(IngridientTagMixin):
 class IngredientViewSet(IngridientTagMixin):
     """
     Вью для просмотра ингредиентов.
+
     Доступно всем пользователям.
     """
+
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
     filterset_class = IngredientFilter
@@ -183,12 +188,14 @@ class IngredientViewSet(IngridientTagMixin):
 class RecipeViewSet(viewsets.ModelViewSet):
     """
     Вьюсет создания/удаления/редактирования/получения рецептов.
+
     Созданы action для добавления рецептов в избранное/список покупок.
     Список покупок можно качать в формате txt.
     Просмотр рецептов доступен всем пользователям,
     редактирование/удаления - автору рецепта или админу.
     Добавить в избранное/список покупок может зарегистрированный пользователь.
     """
+
     queryset = Recipe.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
@@ -266,10 +273,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[AllowAny, ]
     )
     def get_link(self, request, pk):
-        original_url = request.build_absolute_uri(
-        ).replace(r'api\/recipes\/\d+\/', '')
-        url_route = shorten_url(original_url, is_permanent=False)
-        final_short_link = original_url.replace(
+        main_domain = request.build_absolute_uri(
+        ).replace(request.get_full_path(), '')
+        url_route_to_recipe = main_domain + f'/recipes/{pk}/'
+        short_url = Url.objects.filter(url=url_route_to_recipe).first()
+        if short_url:
+            final_short_link = main_domain.replace(
+                request.get_full_path(), ''
+            ) + '/s/' + short_url.short_url + '/'
+            return Response({'short-link': final_short_link})
+        url_route_to_recipe = shorten_url(
+            url_route_to_recipe,
+            is_permanent=False
+        )
+        final_short_link = main_domain.replace(
             request.get_full_path(), ''
-        ) + '/s/' + url_route
+        ) + '/s/' + url_route_to_recipe
         return Response({'short-link': final_short_link})

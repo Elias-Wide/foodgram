@@ -1,4 +1,3 @@
-from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -137,6 +136,7 @@ class AmountIngredient(models.Model):
 
     def __str__(self):
         return f'{self.ingredient} {self.amount}'
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(

@@ -25,15 +25,18 @@ services:
     image: eliaswide/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
   gateway:
-    container_name: eliaswide/foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: eliaswide/foodgram_gateway
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
       - static:/backend_static
       - media:/app/media
+    depends_on:
+      - backend
     restart: always

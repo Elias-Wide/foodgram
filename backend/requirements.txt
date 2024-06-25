@@ -9,6 +9,7 @@ psycopg2-binary==2.9.3
 djangorestframework-simplejwt==4.7.2
 Pillow==9.3.0
 PyJWT==2.1.0
+pytz==2024.1
 requests==2.26.0
 PyYAML==6.0
 load_dotenv==0.1.0

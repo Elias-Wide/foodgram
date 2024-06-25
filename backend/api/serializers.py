@@ -1,7 +1,6 @@
 import base64
 import re
 
-from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -77,8 +76,10 @@ class SignUpSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """
     Сериализатор данных модели User.
+
     Используется при get-запросах.
     """
+
     is_subscribed = serializers.SerializerMethodField()
     avatar = Base64ImageField(required=False, allow_null=True)
 
@@ -98,6 +99,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор данных модели Tag."""
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
@@ -105,15 +107,15 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор данных модели Ingredient."""
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class AmountIngredientSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для промежуточной модели между Recipe и Ingredient.
-    """
+    """Сериализатор для промежуточной модели между Recipe и Ingredient."""
+
     id = serializers.IntegerField(source='ingredient.id',)
     name = serializers.CharField(source='ingredient.name')
     measurement_unit = serializers.CharField(
@@ -127,6 +129,7 @@ class AmountIngredientSerializer(serializers.ModelSerializer):
 
 class AddIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор данных для добавления ингредиентов в рецепт."""
+
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(
         min_value=MIN_INGREDIENT_AMOUNT,
@@ -140,6 +143,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeGetSerializer(serializers.ModelSerializer, ChosenMixin):
     """Сериализатор данных модели Recipe для GET-запросов."""
+
     tags = TagSerializer(many=True)
     author = UserProfileSerializer(read_only=True)
     ingredients = AmountIngredientSerializer(
@@ -172,9 +176,8 @@ class RecipeGetSerializer(serializers.ModelSerializer, ChosenMixin):
 
 
 class RecipeSerializer(serializers.ModelSerializer, AmountMixin, ChosenMixin):
-    """
-    Сериализатор данных для создания рецепта.
-    """
+    """Сериализатор данных для создания рецепта."""
+
     ingredients = AddIngredientSerializer(
         required=True,
         many=True)
@@ -254,6 +257,7 @@ class RecipeMiniSerializer(serializers.ModelSerializer):
 
 class SubscribeSerializer(serializers.ModelSerializer):
     """Сериализатор модели Subscriber."""
+
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
@@ -303,8 +307,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
 
 class SetPasswordSerializer(serializers.Serializer):
-    """
-    Сериализатор модели User для смены пароля."""
+    """Сериализатор модели User для смены пароля."""
+
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
