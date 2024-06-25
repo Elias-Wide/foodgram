@@ -1,4 +1,4 @@
-Django==3.2.3
+Django==4.1
 djangorestframework==3.12.4
 django-cors-headers==3.13.0
 django-filter==23.5
@@ -13,3 +13,4 @@ requests==2.26.0
 PyYAML==6.0
 load_dotenv==0.1.0
 django-urlshortner==0.0.2
+django-bulk-update-or-create==0.3.0

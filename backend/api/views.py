@@ -3,6 +3,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from urlshortner.utils import shorten_url
@@ -26,12 +27,6 @@ class UserViewSet(viewsets.ModelViewSet):
     subscribe - создание подписки на выбранного пользователя.
     subscriptions - просмотр собственных подписок на других авторов.
     avatar - загрузка аватара в профиль.
-
-    Args:
-        viewsets (_type_): _description_
-
-    Returns:
-        _type_: _description_
     """
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
@@ -62,38 +57,32 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ]
     )
     def subscribe(self, request, pk):
-        author = get_object_or_404(User, id=self.kwargs.get('pk'))
+        author = get_object_or_404(User, id=self.kwargs.get('pk', None))
         user = self.request.user
-        is_subscription_exist = Subscription.objects.filter(
-            author=author,
-            user=user
+        is_subscription_exist = user.subscriptions.filter(
+            author=author
         ).exists()
         if request.method == 'POST':
-            if user == author:
-                return Response(
-                    {'errors': 'Нельзя подписаться на самого себя!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if is_subscription_exist:
-                return Response(
-                    {'errors': 'Вы уже подписаны на данного автора!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             serializer = serializers.SubscribeSerializer(
                 data=request.data,
-                context={'author': author, 'user': user, 'request': request}
+                context={
+                    'author': author,
+                    'user': user,
+                    'request': request,
+                    'is_subscription_exist': is_subscription_exist}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if is_subscription_exist:
-            Subscription.objects.get(user=user, author=author).delete()
-            return Response("Успешная отписка",
+            user.subscriptions.get(author=author).delete()
+            return Response('Успешная отписка',
                             status=status.HTTP_204_NO_CONTENT)
         return Response(
-            {"errors": "Вы не подписаны на данного автора"},
+            {'errors': 'Вы не подписаны на данного автора'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
 
     @action(
         ['GET'],
@@ -121,7 +110,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request):
         serializer = serializers.SetPasswordSerializer(
             data=request.data,
-            context={"request": request}
+            context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.update(
@@ -152,12 +141,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 user,
                 data=request.data,
                 partial=True,
-                context={"request": request}
+                context={'request': request}
             )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"avatar": serializer.data['avatar']},
+                    {'avatar': serializer.data['avatar']},
                     status=status.HTTP_200_OK
                 )
             return Response(
@@ -166,7 +155,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.avatar = None
         user.save()
         return Response(
-            "Аватар успешно удален",
+            'Аватар успешно удален',
             status=status.HTTP_204_NO_CONTENT
         )
 
