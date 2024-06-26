@@ -19,6 +19,8 @@
 - Проект "упакован" в Docker-контейнеры
 - Скрипт загрузки образов с Docker Gub описан в файле 'docker-compose.production.yml'
 - Реализован workflow - автоматическое тестирование на соответствие PEP8, автоматический деплой на удаленный сервер и отправка сообщения в Телеграмм в случае успешного запуска проекта.
+- Рецепты можно добавить в список покупок, который можно скачать. Список покупок представляет собой файл txt, в котором прописано общее количество ингредиентов, необходимых для приготовления выбранных рецептов.
+- Для любого рецепта можно получить короткую ссылку. 
 
 ## Запуск проекта локально
 ### 1. Скачать данный репозиторий
@@ -39,9 +41,12 @@ ALLOWED_HOSTS      #список доступных хостов
 ```
 
 ### 2. Запустить Docker engine
-### В основной директории проекта, где лежит файл docker-compose.yml, выполнить команды:
+### В основной директории проекта, где лежит файл docker-compose.yml, выполнить команду:
 ```
 docker compose up -build
+```
+В той же директории с файлом docker-compose.yml, но уже в новом терминале git, выполнить команды.
+```
 docker compose exec backend python manage.py makemigrations
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py import_csv
@@ -51,7 +56,17 @@ docker compose exec backend python manage.py import_csv
 ```
 docker compose exec backend python manage.py createsuperuser
 ```
+Также необходимо скопировать статику для админки Django
+```
+docker compose exec backend python manage.py collectstatic
+```
+И скопировать статику в volume static для бэкенда
+```
+docker compose exec backend cp -r /app/collected_static/. /backend_static/static/ 
+```
+
 После Foodgram станет доступен по адресу http://localhost 
+
 Список доступных API-эндпоинтов доступен по ссылке http://localhost/api/redoc/
 
 ### Автор проекта
