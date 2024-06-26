@@ -116,7 +116,7 @@ DJOSER = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS=["https://eliaswide.ddns.net"]
+CSRF_TRUSTED_ORIGINS = ["https://eliaswide.ddns.net"]
 
 LANGUAGE_CODE = 'ru-RU'
 
