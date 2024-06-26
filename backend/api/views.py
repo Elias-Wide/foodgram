@@ -5,8 +5,9 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from urlshortner.utils import shorten_url
 from urlshortner.models import Url
+from urlshortner.utils import shorten_url
+
 
 from api import serializers
 from foodgramm_backend.constants import ERROR_MESSAGES
@@ -144,7 +145,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 partial=True,
                 context={'request': request}
             )
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(
                     {'avatar': serializer.data['avatar']},

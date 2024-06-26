@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
-ALLOWED_HOSTS = ['158.160.89.120', '127.0.0.1', 'localhost', 'eliaswide.ddns.net']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -115,8 +115,6 @@ DJOSER = {
         'current_user': 'backend.accounts.serializers.UserProfileSerializer',
     }
 }
-
-CSRF_TRUSTED_ORIGINS = ["https://eliaswide.ddns.net"]
 
 LANGUAGE_CODE = 'ru-RU'
 

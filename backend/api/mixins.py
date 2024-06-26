@@ -37,9 +37,10 @@ class ChosenMixin():
 
         Используется для избранного и списка покупок.
         """
-        if self.context['request'].user.is_anonymous:
+        user = self.context['request'].user
+        if user.is_anonymous:
             return False
         return model.objects.filter(
-            user=self.context.get('request').user,
+            user=user,
             recipe=obj
         ).exists()
