@@ -47,10 +47,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'foodgramm_backend.urls'
 
+TEMPLATES_DIR = BASE_DIR / 'templates'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -101,7 +103,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': PAGE_PAGINATION_SIZE,
 }
 
@@ -113,6 +115,8 @@ DJOSER = {
         'current_user': 'backend.accounts.serializers.UserProfileSerializer',
     }
 }
+
+CSRF_TRUSTED_ORIGINS=["https://eliaswide.ddns.net"]
 
 LANGUAGE_CODE = 'ru-RU'
 
