@@ -12,31 +12,29 @@ services:
     env_file:
       - .env
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: eliaswide/foodgram_backend
     env_file: .env
     depends_on:
       - db
-    ports:
-      - "8000:8000"
     volumes:
       - static:/backend_static
       - media:/app/media
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: eliaswide/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
-  nginx:
-    image: nginx:1.25.4-alpine
+    depends_on:
+      - backend
+  gateway:
+    image: eliaswide/foodgram_gateway
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
-      - static:/backend_static
+      # - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
+      - static:/staticfiles
       - media:/app/media
+    depends_on:
+      - backend
     restart: always

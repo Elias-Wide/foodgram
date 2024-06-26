@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-from users.constants import (
+from foodgramm_backend.constants import (
     EMAIL_FIELD_LENGTH,
     FIRST_LAST_NAME_LENGTH,
     ROLE_FIELD_LENGTH,

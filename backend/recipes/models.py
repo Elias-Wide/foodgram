@@ -1,14 +1,14 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from api.constants import (
+from foodgramm_backend.constants import (
+    MAX_COOKING_TIME,
+    MAX_INGREDIENT_AMOUNT,
     MAX_LENTH_IN_ADMIN,
     MEASUREMENT_UNIT_LENTH,
-    TEXT_FIELD_LENGTH
-)
-from recipes.constants import (
-    MIN_COOKING_TIME,
     MIN_INGREDIENT_AMOUNT,
+    MIN_COOKING_TIME,
+    TEXT_FIELD_LENGTH
 )
 from users.models import User
 
@@ -70,6 +70,7 @@ class Recipe(models.Model):
     image = models.ImageField(blank=False, upload_to="recipe_images/")
     ingredients = models.ManyToManyField(
         Ingredient,
+        through='AmountIngredient',
         verbose_name='Ингредиенты'
     )
     tags = models.ManyToManyField(
@@ -77,7 +78,10 @@ class Recipe(models.Model):
         verbose_name='Тэги'
     )
     cooking_time = models.IntegerField(
-        validators=(MinValueValidator(MIN_COOKING_TIME),),
+        validators=(
+            MinValueValidator(MIN_COOKING_TIME),
+            MaxValueValidator(MAX_COOKING_TIME)
+        ),
         verbose_name='Время приготовления'
     )
     pub_date = models.DateTimeField(
@@ -113,24 +117,36 @@ class AmountIngredient(models.Model):
         on_delete=models.CASCADE
     )
     amount = models.PositiveSmallIntegerField(
-        validators=(MinValueValidator(MIN_INGREDIENT_AMOUNT),),
+        validators=(
+            MinValueValidator(MIN_INGREDIENT_AMOUNT),
+            MaxValueValidator(MAX_INGREDIENT_AMOUNT)
+        ),
         verbose_name='Количество ингредиента',
     )
 
     class Meta:
-        verbose_name = 'Cостав рецепта'
+        ordering = ('amount',)
+        verbose_name = 'Состав рецепта'
         verbose_name_plural = 'Состав рецепта'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_ingredients')
+        ]
+
+    def __str__(self):
+        return f'{self.ingredient} {self.amount}'
 
 
 class Subscription(models.Model):
     user = models.ForeignKey(
         User,
-        related_name='subscriber',
+        related_name='subscriptions',
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(
         User,
-        related_name='following',
+        related_name='subscribers',
         on_delete=models.CASCADE
     )
 
@@ -142,6 +158,9 @@ class Subscription(models.Model):
                 fields=['user', 'author'],
                 name='unique_subs')
         ]
+
+    def __str__(self) -> str:
+        return f'{self.user} {self.author}'
 
 
 class Favorite(models.Model):

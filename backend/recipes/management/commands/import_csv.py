@@ -16,8 +16,10 @@ TABLES_DICT = {
 
 class Command(BaseCommand):
     """Команда импорта данных из csv-файла.
+
     Создаются соответствующие модели в бд.
     """
+
     help = 'загрузка данных их CSV файла в базу данных'
 
     def add_arguments(self, parser):

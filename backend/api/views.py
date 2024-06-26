@@ -6,9 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from urlshortner.utils import shorten_url
+from urlshortner.models import Url
 
 from api import serializers
-from api.constants import ERROR_MESSAGES
+from foodgramm_backend.constants import ERROR_MESSAGES
 from api.filters import IngredientFilter, RecipeFilter, TagFilter
 from api.mixins import IngridientTagMixin
 from api.permissions import IsAuthorOrReadOnly
@@ -20,9 +21,17 @@ from users.models import User
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для регистрации и получения/редактирования данных пользователя.
+
+    actions(доступны только зарегистрированным пользователям):
+    me - получение данных текущего авторизованного пользователя.
+    subscribe - создание подписки на выбранного пользователя.
+    subscriptions - просмотр собственных подписок на других авторов.
+    avatar - загрузка аватара в профиль.
+    """
+
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
-    serializer_class = serializers.SignUpSerializer
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -50,36 +59,29 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ]
     )
     def subscribe(self, request, pk):
-        author = get_object_or_404(User, id=self.kwargs.get('pk'))
+        author = get_object_or_404(User, id=self.kwargs.get('pk', None))
         user = self.request.user
-        is_subscription_exist = Subscription.objects.filter(
-            author=author,
-            user=user
+        is_subscription_exist = user.subscriptions.filter(
+            author=author
         ).exists()
         if request.method == 'POST':
-            if user == author:
-                return Response(
-                    {'errors': 'Нельзя подписаться на самого себя!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if is_subscription_exist:
-                return Response(
-                    {'errors': 'Вы уже подписаны на данного автора!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             serializer = serializers.SubscribeSerializer(
                 data=request.data,
-                context={'author': author, 'user': user, 'request': request}
+                context={
+                    'author': author,
+                    'user': user,
+                    'request': request,
+                    'is_subscription_exist': is_subscription_exist}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if is_subscription_exist:
-            Subscription.objects.get(user=user, author=author).delete()
-            return Response("Успешная отписка",
+            user.subscriptions.get(author=author).delete()
+            return Response('Успешная отписка',
                             status=status.HTTP_204_NO_CONTENT)
         return Response(
-            {"errors": "Вы не подписаны на данного автора"},
+            {'errors': 'Вы не подписаны на данного автора'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -109,7 +111,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request):
         serializer = serializers.SetPasswordSerializer(
             data=request.data,
-            context={"request": request}
+            context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.update(
@@ -140,12 +142,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 user,
                 data=request.data,
                 partial=True,
-                context={"request": request}
+                context={'request': request}
             )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"avatar": serializer.data['avatar']},
+                    {'avatar': serializer.data['avatar']},
                     status=status.HTTP_200_OK
                 )
             return Response(
@@ -154,24 +156,46 @@ class UserViewSet(viewsets.ModelViewSet):
         user.avatar = None
         user.save()
         return Response(
-            "Аватар успешно удален",
+            'Аватар успешно удален',
             status=status.HTTP_204_NO_CONTENT
         )
 
 
 class TagViewSet(IngridientTagMixin):
+    """
+    Вью для просмотра тэгов.
+
+    Доступно всем пользователям.
+    """
+
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     filterset_class = TagFilter
 
 
 class IngredientViewSet(IngridientTagMixin):
+    """
+    Вью для просмотра ингредиентов.
+
+    Доступно всем пользователям.
+    """
+
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
     filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет создания/удаления/редактирования/получения рецептов.
+
+    Созданы action для добавления рецептов в избранное/список покупок.
+    Список покупок можно качать в формате txt.
+    Просмотр рецептов доступен всем пользователям,
+    редактирование/удаления - автору рецепта или админу.
+    Добавить в избранное/список покупок может зарегистрированный пользователь.
+    """
+
     queryset = Recipe.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
@@ -249,10 +273,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[AllowAny, ]
     )
     def get_link(self, request, pk):
-        original_url = request.build_absolute_uri(
-        ).replace(r'api\/recipes\/\d+\/', '')
-        url_route = shorten_url(original_url, is_permanent=False)
-        final_short_link = original_url.replace(
+        """
+        Создание/получение короткой ссылки на рецепт.
+
+        Если для рецепта уже есть короткая ссылка в БД,
+        то она она будет возвращена в ответе на запрос,
+        Если короткой ссылки в БД нет - она будет создана.
+        """
+        main_domain = request.build_absolute_uri(
+        ).replace(request.get_full_path(), '')
+        url_route_to_recipe = main_domain + f'/recipes/{pk}/'
+        short_url = Url.objects.filter(url=url_route_to_recipe).first()
+        if short_url:
+            final_short_link = main_domain.replace(
+                request.get_full_path(), ''
+            ) + '/s/' + short_url.short_url + '/'
+            return Response({'short-link': final_short_link})
+        url_route_to_recipe = shorten_url(
+            url_route_to_recipe,
+            is_permanent=False
+        )
+        final_short_link = main_domain.replace(
             request.get_full_path(), ''
-        ) + '/s/' + url_route
+        ) + '/s/' + url_route_to_recipe
         return Response({'short-link': final_short_link})

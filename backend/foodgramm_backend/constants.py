@@ -1,11 +1,23 @@
 EMAIL_FIELD_LENGTH: int = 254
 MEASUREMENT_UNIT_LENTH: int = 10
 MIN_COOKING_TIME: int = 1
+MAX_COOKING_TIME: int = 32_000
 MIN_INGREDIENT_AMOUNT: int = 1
+MAX_INGREDIENT_AMOUNT: int = 32_000
 MAX_LENTH_IN_ADMIN: int = 20
 TEXT_FIELD_LENGTH: int = 255
 USERNAME_LENGTH: int = 150
-
+FIRST_LAST_NAME_LENGTH: int = 150
+ROLE_FIELD_LENGTH: int = 20
+PAGE_PAGINATION_SIZE: int = 6
+USER_ROLE_NAME: str = 'user'
+ADMIN_ROLE_NAME: str = 'admin'
+USER_ROLE_CHOICES = tuple(
+    (user_role, user_role.capitalize()) for user_role in (
+        USER_ROLE_NAME,
+        ADMIN_ROLE_NAME,
+    )
+)
 ERROR_MESSAGES: dict[dict[str]] = {
     'ALREADY_IN': {
         "FAVORITE": 'Рецепт уже добавлен в избранное!',

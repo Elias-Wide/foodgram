@@ -13,7 +13,7 @@ services:
       - .env
   backend:
     build:
-      context: ../backend
+      context: ./backend
       dockerfile: Dockerfile
     env_file: .env
     depends_on:
@@ -25,18 +25,19 @@ services:
       - media:/app/media
   frontend:
     build:
-      context: ../frontend
+      context: ./frontend
       dockerfile: Dockerfile
     volumes:
-      - ../frontend/:/app/result_build/
+      - ./frontend/:/app/result_build/
   nginx:
+    container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
       - static:/backend_static
       - media:/app/media
     restart: always

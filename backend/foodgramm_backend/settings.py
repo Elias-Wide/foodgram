@@ -1,24 +1,19 @@
-# Отправил на ревью только back.
-# Все тесты в Постмане прошли.
-#  Деплой еще не делал.
-# Readme и докстринги сделаю к след. ревью=)
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 
+from foodgramm_backend.constants import PAGE_PAGINATION_SIZE
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-SECRET_KEY = 'django-insecure-1^f)yg_2xxsky@e!504=0avd+54#dmvz3r6)-@(n_u1^8#%&ls'
-# SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', ['*']).split(',')
+ALLOWED_HOSTS = ['158.160.89.120', '127.0.0.1', 'localhost', 'eliaswide.ddns.net']
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -70,24 +65,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgramm_backend.wsgi.application'
 
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'django'),
+        'USER': os.getenv('POSTGRES_USER', 'django_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mysecretpassword'),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', 5432)
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'django_user'),
-#         'USER': os.getenv('POSTGRES_USER', 'django_user'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'django'),
-#         'HOST': os.getenv('DB_HOST', ''),
-#         'PORT': os.getenv('DB_PORT', 5432)
-#     }
-# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -115,7 +102,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': PAGE_PAGINATION_SIZE,
 }
 
 DJOSER = {

@@ -4,6 +4,7 @@ from recipes.models import AmountIngredient
 
 
 def shopping_list_txt(user):
+    """Функция скачивания текстового файла списка ингредиентов."""
     text_shop_list = 'Список покупок \n\n'
     measurement_unit = {}
     ingridient_amount = {}
