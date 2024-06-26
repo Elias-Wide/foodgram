@@ -159,6 +159,9 @@ class Subscription(models.Model):
                 name='unique_subs')
         ]
 
+    def __str__(self) -> str:
+        return f'{self.user} {self.author}'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(

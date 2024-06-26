@@ -47,7 +47,7 @@ docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py import_csv
 ```
 Последняя команда загружает в бд подготовленный набор необходимых данных(ингредиенты и тэги)
-Дополнительно можно создать суперпользователя, для к админ-панели сайта, командой:
+Дополнительно можно создать суперпользователя, для доступа к админ-панели сайта, командой:
 ```
 docker compose exec backend python manage.py createsuperuser
 ```

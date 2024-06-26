@@ -273,6 +273,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[AllowAny, ]
     )
     def get_link(self, request, pk):
+        """
+        Создание/получение короткой ссылки на рецепт.
+
+        Если для рецепта уже есть короткая ссылка в БД,
+        то она она будет возвращена в ответе на запрос, в ином случае
+        она будет создана.
+        """
         main_domain = request.build_absolute_uri(
         ).replace(request.get_full_path(), '')
         url_route_to_recipe = main_domain + f'/recipes/{pk}/'
