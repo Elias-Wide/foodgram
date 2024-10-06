@@ -46,6 +46,8 @@ ALLOWED_HOSTS      #список доступных хостов
 docker compose up -build
 ```
 В той же директории с файлом docker-compose.yml, но уже в новом терминале git, выполнить команды.
+Также эти команды можно выполнить в декстопном приложении Docker, провалиться в контейнер backend,
+войти в раздел exec и в консоль ввести команды.
 ```
 docker compose exec backend python manage.py makemigrations
 docker compose exec backend python manage.py migrate
